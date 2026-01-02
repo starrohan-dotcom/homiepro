@@ -1,44 +1,51 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { PRODUCTS } from "../constants";
 
-// Corrected initialization using process.env.API_KEY directly as per guidelines
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-export const getShoppingAdvice = async (userPrompt: string, history: {role: string, parts: any[]}[]) => {
+export const getShoppingAdvice = async (
+  userPrompt: string, 
+  history: {role: string, parts: any[]}[],
+  imageData?: { data: string; mimeType: string }
+) => {
   try {
-    const productList = PRODUCTS.map(p => `${p.name} ($${p.price}) - ${p.description}`).join('\n');
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const productList = PRODUCTS.map(p => `- ${p.name} ($${p.price}): ${p.description}`).join('\n');
     
-    // Using generateContent with systemInstruction in config as per standard best practices
+    const parts: any[] = [{ text: userPrompt }];
+    if (imageData) {
+      parts.push({
+        inlineData: imageData
+      });
+    }
+
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: [
         ...history,
         {
           role: "user",
-          parts: [{ text: userPrompt }]
+          parts: parts
         }
       ],
       config: {
-        systemInstruction: `You are "Homie", an expert interior design assistant for the store "Homie Pro". 
-          Our current inventory is:
+        systemInstruction: `You are "Homie", a world-class interior designer for the store "Homie Pro". 
+          We specialize in high-end bedding, lamps, and decorative items.
+          
+          Our Catalog:
           ${productList}
           
-          Guidelines:
-          1. Be helpful, friendly, and professional.
-          2. Recommend specific products from the list above.
-          3. Ask clarifying questions about their room style if they aren't sure.
-          4. Keep responses concise and focused on home decor.`,
+          Your Task:
+          1. If the user provides a room image, analyze the colors, lighting, and style.
+          2. Recommend 2-3 items from our catalog that would elevate their space.
+          3. Be encouraging, sophisticated, and helpful.
+          4. If they just want to chat, guide them towards our bestsellers.
+          5. Keep responses concise and use markdown for readability.`,
         temperature: 0.7,
-        topP: 0.95,
-        maxOutputTokens: 500,
       }
     });
 
-    // Accessing .text property directly as it's a property, not a method
     return response.text;
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "I'm having a bit of trouble connecting to my design database. How else can I help you today?";
+    return "I'm having a slight connection issue with my design studio. Please try again in a moment, or tell me more about your style!";
   }
 };
