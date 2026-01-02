@@ -1,0 +1,7 @@
+{
+  "name": "Homie Pro - Premium Home Decor",
+  "description": "A high-end e-commerce platform for curated home decor, bedding, and lighting with AI-powered shopping assistance.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
