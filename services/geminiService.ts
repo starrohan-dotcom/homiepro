@@ -7,6 +7,7 @@ export const getShoppingAdvice = async (
   imageData?: { data: string; mimeType: string }
 ) => {
   try {
+    // Initialize inside the function to use the latest process.env.API_KEY
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const productList = PRODUCTS.map(p => `- ${p.name} ($${p.price}): ${p.description}`).join('\n');
     
